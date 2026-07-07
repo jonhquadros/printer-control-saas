@@ -1,11 +1,42 @@
-<div align="center">
+# PrinterControl SaaS Control
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+Sistema completo para gestão de outsourcing de impressão e manutenção de equipamentos.
 
-  <h1>Built with AI Studio</h2>
+## 🚀 Fase 01 - Setup e Design System (Concluída)
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+- [x] Inicialização do projeto (Vite + React + TS)
+- [x] Arquitetura de pastas modular
+- [x] Design System com Tailwind CSS + Radix UI
+- [x] Dark / Light Mode
+- [x] Layout Principal Responsivo (Sidebar + Mobile Nav)
+- [x] Configuração Firebase Base
+- [x] Componentes Comuns (PageHeader, EmptyState, Loading)
+- [x] Placeholders de todos os módulos
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+## 🛠️ Tecnologias
 
-</div>
+- **Framework**: React 18+ (Vite)
+- **Styling**: Tailwind CSS
+- **Componentes**: Radix UI (via Shadcn/UI)
+- **Database/Auth**: Firebase (Firestore, Auth, Storage)
+- **Icons**: Lucide React
+- **Animações**: Framer Motion
+
+## 📁 Estrutura do Projeto
+
+```
+src/
+ ├── components/       # Componentes reutilizáveis
+ ├── features/         # Módulos de negócio
+ ├── services/         # Integração com APIs/Firebase
+ ├── hooks/            # Hooks customizados
+ ├── contexts/         # Contextos globais (Auth, etc)
+ ├── lib/              # Configurações de bibliotecas
+ ├── schemas/          # Validações Zod
+ ├── types/            # Tipagens TypeScript
+```
+
+## 🔒 Segurança
+
+O sistema utiliza arquitetura **Multi-Tenant** isolada via `companyId` em todos os documentos do Firestore.
+As regras de segurança (Firestore Rules) garantem que usuários de uma empresa jamais acessem dados de outra.

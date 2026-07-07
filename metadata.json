@@ -1,0 +1,6 @@
+{
+  "name": "PrinterControl SaaS",
+  "description": "Enterprise ERP for printer management, counter control, and technical service orders with multi-tenant architecture.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

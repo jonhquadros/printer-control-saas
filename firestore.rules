@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Function to get the current user's profile
+    function getUserProfile() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data : null;
+    }
+
+    // Function to check if user belongs to the requested company
+    function belongsToCompany(companyId) {
+      let profile = getUserProfile();
+      return isAuthenticated() && profile != null && profile.companyId == companyId;
+    }
+
+    // Function to check if user is admin
+    function isAdmin() {
+      let profile = getUserProfile();
+      return isAuthenticated() && profile != null && profile.role == 'ADMIN';
+    }
+    
+    // Function to check if user is super admin
+    function isSuperAdmin() {
+      let profile = getUserProfile();
+      return isAuthenticated() && profile != null && profile.role == 'SUPER_ADMIN';
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      // Anyone can create a user profile during registration
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      // Users can read and update their own profile
+      allow read, update: if isAuthenticated() && request.auth.uid == userId;
+      // Admins can read and update users in their company
+      allow read, update: if isAdmin() && belongsToCompany(resource.data.companyId);
+      // Super admins can do everything
+      allow read, write: if isSuperAdmin();
+    }
+
+    // Companies Collection
+    match /companies/{companyId} {
+      // Allow creation during registration
+      allow create: if isAuthenticated();
+      // Allow reading and updating if user belongs to this company and is admin
+      allow read: if belongsToCompany(companyId);
+      allow update: if isAdmin() && belongsToCompany(companyId);
+      // Super admins can do everything
+      allow read, write: if isSuperAdmin();
+    }
+
+    // Generic rule for other company-isolated collections (e.g., printers, serviceOrders)
+    match /{collection}/{document=**} {
+      // Allow access if the document has a companyId field matching the user's company
+      // This is a simplified fallback for development.
+      // In production, each collection should have specific rules based on RBAC.
+      allow read, write: if (resource != null && 'companyId' in resource.data && belongsToCompany(resource.data.companyId)) || 
+                            (request.resource != null && 'companyId' in request.resource.data && belongsToCompany(request.resource.data.companyId)) ||
+                            isSuperAdmin();
+    }
+
+    // Reports Collection
+    match /reports/{reportId} {
+      allow read: if belongsToCompany(resource.data.companyId);
+      allow create: if belongsToCompany(request.resource.data.companyId) && (isAdmin() || getUserProfile().role == 'TECHNICIAN');
+      allow update, delete: if isAdmin() && belongsToCompany(resource.data.companyId);
+    }
+    
+    // Audit Logs Collection
+    match /auditLogs/{logId} {
+      // Anyone can write an audit log
+      allow create: if true;
+      // Only super admin can read audit logs
+      allow read, update, delete: if isSuperAdmin();
+    }
+  }
+}
