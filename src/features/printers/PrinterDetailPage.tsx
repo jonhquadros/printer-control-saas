@@ -5,7 +5,8 @@ import { usePrinter } from "../../hooks/usePrinters";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { CountersTab } from "./CountersTab";
 import { PrinterDataTab } from "./PrinterDataTab";
-import { FileGallery } from "../files/FileGallery";
+import { FileGallery } from "../../components/upload/FileGallery";
+import { FileDropzone } from "../../components/upload/FileDropzone";
 
 export const PrinterDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -72,12 +73,24 @@ export const PrinterDetailPage: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="docs" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-            <FileGallery 
-              moduleId="PRINTERS" 
-              entityId={printer.id}
-              categories={['manuais', 'documentos']}
-            />
+          <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm space-y-8">
+            <div>
+              <h3 className="font-bold text-slate-800 mb-4">Adicionar Arquivo</h3>
+              <FileDropzone 
+                config={{ maxSizeBytes: 20 * 1024 * 1024, acceptedFormats: [], maxFiles: 10, compressionQuality: 0.8, compressionMaxWidth: 1920 }}
+                categoria="documentos"
+                modulo="printers"
+                entidadeId={printer.id}
+              />
+            </div>
+            
+            <div>
+              <h3 className="font-bold text-slate-800 mb-4">Arquivos da Impressora</h3>
+              <FileGallery 
+                modulo="printers" 
+                entidadeId={printer.id}
+              />
+            </div>
           </div>
         </TabsContent>
       </Tabs>

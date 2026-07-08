@@ -6,6 +6,9 @@ import { QRCodeSVG } from "qrcode.react";
 import { Badge } from "../../components/ui/badge";
 import { cn } from "../../lib/utils";
 
+import { FileGallery } from "../../components/upload/FileGallery";
+import { FileDropzone } from "../../components/upload/FileDropzone";
+
 interface PrinterDataTabProps {
   printer: Printer;
 }
@@ -117,17 +120,18 @@ export const PrinterDataTab: React.FC<PrinterDataTabProps> = ({ printer }) => {
           </p>
         </Card>
 
-        <Card className="p-0 overflow-hidden">
-          <div className="aspect-square bg-slate-100 relative">
-            {printer.photoUrl ? (
-              <img src={printer.photoUrl} alt={printer.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-            ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
-                <p className="text-xs font-bold uppercase tracking-widest">Sem Foto</p>
-              </div>
-            )}
+        <Card className="p-0 overflow-hidden border-0 bg-transparent shadow-none">
+          <div className="bg-white rounded-xl border p-4 mb-4 space-y-4">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Foto Principal</h4>
+            <FileDropzone 
+              config={{ maxSizeBytes: 5 * 1024 * 1024, acceptedFormats: ['image/*'], maxFiles: 1, compressionQuality: 0.8, compressionMaxWidth: 800 }}
+              categoria="foto-principal"
+              modulo="printers"
+              entidadeId={printer.id}
+            />
+            <FileGallery modulo="printers" entidadeId={printer.id} categoria="foto-principal" />
           </div>
-          <div className="p-4 bg-white border-t border-slate-100">
+          <div className="p-4 bg-white border rounded-xl shadow-sm">
              <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">Última Manutenção</h4>
              <p className="text-sm font-medium text-slate-900">
                {printer.lastMaintenanceDate ? new Date(printer.lastMaintenanceDate.seconds * 1000).toLocaleDateString('pt-BR') : "Nenhuma registrada"}

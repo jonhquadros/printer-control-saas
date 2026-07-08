@@ -38,7 +38,7 @@ export const ServiceOrderForm: React.FC<ServiceOrderFormProps> = ({ onSuccess })
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pb-4">
       <div className="space-y-2">
         <Label htmlFor="printerId" className="text-xs font-bold uppercase tracking-widest text-slate-500">Impressora</Label>
         <select 

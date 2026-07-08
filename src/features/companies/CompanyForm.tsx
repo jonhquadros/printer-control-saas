@@ -51,7 +51,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({ initialData, onSuccess
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pb-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="name" className="text-xs font-bold uppercase tracking-widest text-slate-500">Razão Social</Label>

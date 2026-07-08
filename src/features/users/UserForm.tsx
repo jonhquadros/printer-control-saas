@@ -45,7 +45,7 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onSuccess }) =>
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pb-4">
       <div className="space-y-2">
         <Label htmlFor="name" className="text-xs font-bold uppercase tracking-widest text-slate-500">Nome Completo</Label>
         <Input id="name" {...register("name")} className="h-9 text-sm" />

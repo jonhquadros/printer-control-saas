@@ -33,7 +33,7 @@ export const ServiceOrderDetailPage: React.FC = () => {
 
   const generatePDF = async () => {
     setIsGenerating(true);
-    // Use the hidden professional layout for PDF
+    // Use the professional layout for PDF
     const element = document.getElementById("os-report-print");
     if (!element) {
       alert("Erro ao localizar conteúdo do relatório.");
@@ -42,27 +42,30 @@ export const ServiceOrderDetailPage: React.FC = () => {
     }
 
     try {
-      // Temporarily remove hidden class to capture
-      element.classList.remove("hidden");
+      // Small delay to ensure any dynamic content or images are ready
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       const canvas = await html2canvas(element, { 
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: "#ffffff"
+        backgroundColor: "#ffffff",
+        windowWidth: 794, // 210mm at 96dpi
       });
       
-      const imgData = canvas.toDataURL("image/png");
+      const imgData = canvas.toDataURL("image/jpeg", 1.0);
+      
+      if (!imgData || imgData === "data:,") {
+        throw new Error("Falha ao capturar imagem do relatório (canvas vazio).");
+      }
+
       const pdf = new jsPDF("p", "mm", "a4");
       
-      const imgProps = pdf.getImageProperties(imgData);
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
       pdf.save(`OS-${String(order.number).padStart(5, '0')}.pdf`);
-      
-      element.classList.add("hidden");
     } catch (err) {
       console.error("Error generating PDF", err);
       alert("Erro ao gerar o PDF. Verifique se todas as imagens foram carregadas.");
@@ -108,8 +111,8 @@ export const ServiceOrderDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Professional PDF Template (Hidden from view) */}
-      <div className="hidden">
+      {/* Professional PDF Template (Hidden from view but rendered for capture) */}
+      <div className="fixed -left-[9999px] top-0 pointer-events-none" aria-hidden="true">
         <OSReportPDF 
           order={order} 
           printer={printer || undefined} 

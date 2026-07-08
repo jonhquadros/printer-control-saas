@@ -1,71 +1,68 @@
-import React, { useCallback } from "react";
-import { useDropzone } from "react-dropzone";
-import { Upload, File, Image, Film, X } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import React, { useCallback } from 'react';
+import { useDropzone, Accept } from 'react-dropzone';
+import { UploadCloud } from 'lucide-react';
+import { UploadConfig, FileCategory, FileModule } from '../../types/file.types';
+import { useUpload } from '../../features/files/hooks/useUpload';
+import { UploadProgress } from './UploadProgress';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface FileDropzoneProps {
-  onFilesSelected: (files: File[]) => void;
-  maxFiles?: number;
-  accept?: Record<string, string[]>;
-  isLoading?: boolean;
+  config: UploadConfig;
+  categoria: FileCategory;
+  modulo: FileModule;
+  entidadeId: string;
 }
 
-export const FileDropzone: React.FC<FileDropzoneProps> = ({ 
-  onFilesSelected, 
-  maxFiles = 10,
-  accept = {
-    'image/*': ['.jpeg', '.jpg', '.png', '.webp'],
-    'application/pdf': ['.pdf'],
-    'video/*': ['.mp4', '.mov']
-  },
-  isLoading 
-}) => {
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    onFilesSelected(acceptedFiles);
-  }, [onFilesSelected]);
+export const FileDropzone: React.FC<FileDropzoneProps> = ({ config, categoria, modulo, entidadeId }) => {
+  const { user } = useAuth();
+  const { uploadFiles, uploads, isUploading } = useUpload(config);
 
-  const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (user?.empresaId && user?.id) {
+      uploadFiles(acceptedFiles, {
+        empresaId: user.empresaId,
+        modulo,
+        entidadeId,
+        categoria,
+        userId: user.id
+      });
+    }
+  }, [user, modulo, entidadeId, categoria, uploadFiles]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    maxFiles,
-    accept,
-    disabled: isLoading
+    accept: config.acceptedFormats.length > 0 
+      ? config.acceptedFormats.reduce((acc, curr) => ({ ...acc, [curr]: [] }), {} as Accept)
+      : undefined,
+    maxSize: config.maxSizeBytes,
+    maxFiles: config.maxFiles,
+    disabled: isUploading
   } as any);
 
   return (
     <div className="space-y-4">
       <div 
         {...getRootProps()} 
-        className={`
-          relative group cursor-pointer border-2 border-dashed rounded-3xl p-10 transition-all
-          ${isDragActive ? 'border-indigo-500 bg-indigo-50/50 scale-[1.01]' : 'border-slate-200 hover:border-indigo-400 hover:bg-slate-50/50'}
-          ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
-        `}
+        className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
+          isDragActive ? 'border-indigo-500 bg-indigo-50' : 'border-slate-300 hover:border-indigo-400 bg-slate-50'
+        } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <input {...getInputProps()} />
-        <div className="flex flex-col items-center justify-center gap-4">
-          <div className={`p-4 rounded-2xl bg-white shadow-sm border border-slate-100 transition-transform group-hover:scale-110 ${isDragActive ? 'scale-110 ring-4 ring-indigo-50' : ''}`}>
-            <Upload className={`w-8 h-8 ${isDragActive ? 'text-indigo-600' : 'text-slate-400'}`} />
-          </div>
-          <div className="text-center">
-            <p className="font-bold text-slate-700">
-              {isDragActive ? "Solte os arquivos aqui" : "Arraste e solte ou clique para selecionar"}
-            </p>
-            <p className="text-xs text-slate-500 mt-1">
-              Imagens, PDFs e Vídeos (máx {maxFiles} arquivos)
-            </p>
-          </div>
-        </div>
+        <UploadCloud className="w-10 h-10 text-slate-400 mx-auto mb-4" />
+        <p className="text-sm font-medium text-slate-700">
+          {isDragActive ? "Solte os arquivos aqui" : "Arraste e solte arquivos aqui, ou clique para selecionar"}
+        </p>
+        <p className="text-xs text-slate-500 mt-2">
+          {config.acceptedFormats.join(', ')} (Max: {Math.round(config.maxSizeBytes / 1024 / 1024)}MB)
+        </p>
       </div>
 
-      {fileRejections.length > 0 && (
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-3 bg-red-50 rounded-xl border border-red-100 flex items-center gap-2 text-xs text-red-600"
-        >
-          <X className="w-4 h-4" />
-          <span>Alguns arquivos foram rejeitados por exceder o limite ou formato inválido.</span>
-        </motion.div>
+      {uploads.length > 0 && (
+        <div className="space-y-3">
+          {uploads.map(upload => (
+            <UploadProgress key={upload.fileId} upload={upload} />
+          ))}
+        </div>
       )}
     </div>
   );

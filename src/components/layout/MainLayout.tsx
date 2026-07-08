@@ -25,7 +25,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Header title="PrinterControl" subtitle={title} />
         <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
-          <div className="p-4 md:p-8 max-w-7xl mx-auto w-full">
+          <div className="p-4 pb-24 md:p-8 max-w-7xl mx-auto w-full">
             {children}
           </div>
         </main>
