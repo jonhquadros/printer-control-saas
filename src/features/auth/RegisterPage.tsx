@@ -31,11 +31,13 @@ export const RegisterPage: React.FC = () => {
     try {
       await authService.register(data);
       await reloadProfile();
-      navigate("/");
+      navigate("/onboarding");
     } catch (err: any) {
       console.error(err);
       if (err.code === 'auth/email-already-in-use') {
         setError("Este e-mail já está em uso por outra conta.");
+      } else if (err.message?.includes("Identity Toolkit")) {
+        setError(err.message);
       } else {
         setError("Erro ao registrar. Verifique os dados e tente novamente.");
       }

@@ -6,15 +6,13 @@ import { saveMetadata, softDelete as softDeleteFile } from './file.service';
 // Mock generation of signature for client-side demo if no real backend is provided
 // In production, this MUST call a Cloud Function
 const generateUploadSignatureMock = async (folder: string, publicId: string, resourceType: string): Promise<CloudinarySignature> => {
-  // Using unauthenticated upload for now if no signature backend exists.
-  // We'll mimic the response to keep structure intact.
-  return {
-    signature: '',
-    timestamp: Math.floor(Date.now() / 1000),
-    folder,
-    apiKey: import.meta.env.VITE_CLOUDINARY_API_KEY || '',
-    cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || '',
-  };
+  const res = await fetch('/api/upload/signature', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ folder, publicId })
+  });
+  if (!res.ok) throw new Error('Failed to generate upload signature');
+  return res.json();
 };
 
 export const uploadFile = async (
@@ -50,13 +48,10 @@ export const uploadFile = async (
   const formData = new FormData();
   formData.append('file', fileToUpload);
   formData.append('public_id', publicId);
-  
-  // IMPORTANT: For unsigned uploads (since we don't have a secure backend available to sign it right now without exposing secrets),
-  // we would typically use an upload preset. 
-  // Given the constraints and lack of real cloud function backend with the secret, 
-  // I will use standard unsigned upload if preset is provided, OR if the environment has secrets (not recommended but for demo).
-  // Assuming the user set up an unsigned preset named "saas_upload":
-  formData.append('upload_preset', 'ml_default'); // Default unsigned preset for many cloudinary accounts. Fallback.
+  formData.append('folder', folder);
+  formData.append('api_key', signatureData.apiKey);
+  formData.append('timestamp', signatureData.timestamp.toString());
+  formData.append('signature', signatureData.signature);
   
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();

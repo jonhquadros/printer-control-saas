@@ -5,6 +5,7 @@ import { usePrinter } from "../../hooks/usePrinters";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { CountersTab } from "./CountersTab";
 import { PrinterDataTab } from "./PrinterDataTab";
+import { PrinterOSTab } from "./PrinterOSTab";
 import { FileGallery } from "../../components/upload/FileGallery";
 import { FileDropzone } from "../../components/upload/FileDropzone";
 
@@ -63,13 +64,7 @@ export const PrinterDetailPage: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="os" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="p-12 bg-white border border-dashed rounded-xl flex flex-col items-center text-center">
-            <Wrench className="w-12 h-12 text-slate-200 mb-4" />
-            <h3 className="text-lg font-bold text-slate-900">Histórico de OS</h3>
-            <p className="text-sm text-slate-500 max-w-sm mt-2">
-              As ordens de serviço vinculadas a este equipamento aparecerão aqui conforme forem abertas.
-            </p>
-          </div>
+          <PrinterOSTab printer={printer} />
         </TabsContent>
 
         <TabsContent value="docs" className="animate-in fade-in slide-in-from-bottom-2 duration-300">

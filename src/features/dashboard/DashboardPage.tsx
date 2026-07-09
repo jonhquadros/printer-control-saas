@@ -15,10 +15,12 @@ import { useUsers } from "../../hooks/useUsers";
 import { format } from "date-fns";
 
 export const DashboardPage: React.FC = () => {
-  const { companies } = useCompanies();
-  const { printers } = usePrinters();
-  const { orders } = useServiceOrders();
-  const { users } = useUsers();
+  const { companies, isLoading: loadingCompanies } = useCompanies();
+  const { printers, isLoading: loadingPrinters } = usePrinters();
+  const { orders, isLoading: loadingOrders } = useServiceOrders();
+  const { users, isLoading: loadingUsers } = useUsers();
+
+  const isLoading = loadingCompanies || loadingPrinters || loadingOrders || loadingUsers;
 
   const stats = [
     { 
@@ -37,7 +39,7 @@ export const DashboardPage: React.FC = () => {
     },
     { 
       label: "OS Abertas", 
-      value: orders.filter(o => o.status === 'OPEN' || o.status === 'IN_PROGRESS').length.toString(), 
+      value: orders.filter(o => o.status && o.status !== 'FINALIZADA' && o.status !== 'ARQUIVADA').length.toString(), 
       icon: ClipboardList, 
       color: "text-amber-600", 
       bg: "bg-amber-50" 
@@ -61,25 +63,40 @@ export const DashboardPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'OPEN': return "bg-red-100 text-red-700";
-      case 'IN_PROGRESS': return "bg-amber-100 text-amber-700";
-      case 'WAITING_PARTS': return "bg-blue-100 text-blue-700";
-      case 'FINISHED': return "bg-green-100 text-green-700";
-      case 'CANCELLED': return "bg-slate-100 text-slate-700";
+      case 'ABERTA': return "bg-slate-100 text-slate-700";
+      case 'AGUARDANDO_TECNICO': return "bg-blue-100 text-blue-700";
+      case 'EM_ATENDIMENTO': return "bg-indigo-100 text-indigo-700";
+      case 'AGUARDANDO_PECAS': return "bg-amber-100 text-amber-700";
+      case 'AGUARDANDO_APROVACAO': return "bg-orange-100 text-orange-700";
+      case 'FINALIZADA': return "bg-green-100 text-green-700";
+      case 'ARQUIVADA': return "bg-gray-100 text-gray-700";
       default: return "bg-slate-100 text-slate-700";
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'OPEN': return "Aberta";
-      case 'IN_PROGRESS': return "Em Atendimento";
-      case 'WAITING_PARTS': return "Aguardando Peças";
-      case 'FINISHED': return "Finalizada";
-      case 'CANCELLED': return "Cancelada";
-      default: return status;
+      case 'ABERTA': return "Aberta";
+      case 'AGUARDANDO_TECNICO': return "Aguardando Técnico";
+      case 'EM_ATENDIMENTO': return "Em Atendimento";
+      case 'AGUARDANDO_PECAS': return "Aguardando Peças";
+      case 'AGUARDANDO_APROVACAO': return "Aguardando Aprovação";
+      case 'FINALIZADA': return "Finalizada";
+      case 'ARQUIVADA': return "Arquivada";
+      default: return status.replace('_', ' ');
     }
   };
+  if (isLoading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-[400px] text-slate-500 font-medium">
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+          <span>Carregando painel...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-8 animate-in fade-in duration-500">
       {/* Top Stats Grid */}
@@ -112,7 +129,7 @@ export const DashboardPage: React.FC = () => {
             <table className="w-full text-left">
               <thead className="bg-slate-50/80 text-[10px] uppercase font-bold text-slate-500 tracking-widest border-b border-slate-100">
                 <tr>
-                  <th className="px-6 py-4">ID</th>
+                  <th className="px-6 py-4">OS</th>
                   <th className="px-6 py-4">Empresa / Equipamento</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4 text-right">Data</th>
@@ -132,7 +149,7 @@ export const DashboardPage: React.FC = () => {
 
                   return (
                     <tr key={os.id} className="hover:bg-slate-50 transition-colors group">
-                      <td className="px-6 py-4 font-mono text-xs text-indigo-600 font-bold">{os.id.substring(0, 8)}</td>
+                      <td className="px-6 py-4 font-mono text-xs text-indigo-600 font-bold">#{String(os.number || 0).padStart(5, '0')}</td>
                       <td className="px-6 py-4">
                         <p className="font-bold text-slate-800 text-xs">{company?.name || "Empresa não encontrada"}</p>
                         <p className="text-[10px] text-slate-500 font-medium">{printer?.model || os.printerId}</p>

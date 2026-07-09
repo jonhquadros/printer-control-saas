@@ -6,6 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { ServiceOrderForm } from "../../features/service-orders/ServiceOrderForm";
 import { ThemeToggle } from "../common/ThemeToggle";
 
+import { GlobalSearch } from "../search/GlobalSearch";
+import { NotificationBell } from "./NotificationBell";
+
 interface HeaderProps {
   title: string;
   subtitle?: string;
@@ -23,21 +26,11 @@ export const Header: React.FC<HeaderProps> = ({ title, subtitle = "Visão Geral"
       </div>
       
       <div className="flex items-center gap-6">
-        <div className="relative hidden lg:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
-          <Input 
-            placeholder="Pesquisar..." 
-            className="h-9 w-64 pl-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-900 transition-all rounded-lg text-xs"
-          />
-        </div>
+        <GlobalSearch />
 
         <div className="flex items-center gap-1 md:gap-3">
           <ThemeToggle />
-          
-          <button className="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 relative transition-colors group">
-            <Bell className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
-          </button>
+          <NotificationBell />
           
           <div className="h-8 w-[1px] bg-slate-200 dark:bg-slate-800 mx-1 hidden md:block" />
           

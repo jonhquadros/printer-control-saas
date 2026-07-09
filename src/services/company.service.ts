@@ -48,14 +48,14 @@ export const companyService = {
       await updateDoc(docRef, { logoUrl });
     }
     
-    await auditService.log({
-      action: 'CREATE_COMPANY',
-      userId,
-      userEmail,
-      companyId: docRef.id,
-      status: 'SUCCESS',
-      details: `Company ${data.name} created.`
-    });
+      await auditService.log({
+        module: 'COMPANIES',
+        action: 'CREATE',
+        userId,
+        userEmail,
+        companyId: docRef.id,
+        details: `Empresa ${data.name} criada com sucesso.`
+      });
 
     const newDoc = await getDoc(docRef);
     return { id: newDoc.id, ...newDoc.data() } as Company;
@@ -77,12 +77,12 @@ export const companyService = {
     await updateDoc(docRef, updateData);
     
     await auditService.log({
-      action: 'UPDATE_COMPANY',
+      module: 'COMPANIES',
+      action: 'UPDATE',
       userId,
       userEmail,
       companyId: id,
-      status: 'SUCCESS',
-      details: `Company ${id} updated.`
+      details: `Empresa ${id} atualizada.`
     });
   },
 

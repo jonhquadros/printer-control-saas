@@ -18,9 +18,9 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({ config, categoria, m
   const { uploadFiles, uploads, isUploading } = useUpload(config);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (user?.empresaId && user?.id) {
+    if (user?.companyId && user?.id) {
       uploadFiles(acceptedFiles, {
-        empresaId: user.empresaId,
+        empresaId: user.companyId,
         modulo,
         entidadeId,
         categoria,
@@ -29,6 +29,7 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({ config, categoria, m
     }
   }, [user, modulo, entidadeId, categoria, uploadFiles]);
 
+  // @ts-ignore
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: config.acceptedFormats.length > 0 
@@ -37,7 +38,7 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({ config, categoria, m
     maxSize: config.maxSizeBytes,
     maxFiles: config.maxFiles,
     disabled: isUploading
-  } as any);
+  });
 
   return (
     <div className="space-y-4">

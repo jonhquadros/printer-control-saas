@@ -11,7 +11,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, roles 
   const { user, firebaseUser, loading } = useAuth();
   const location = useLocation();
 
-  if (loading || (firebaseUser && !user)) {
+  if (loading) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
@@ -19,8 +19,16 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, roles 
     );
   }
 
-  if (!firebaseUser && !user) {
+  if (!firebaseUser) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // If we have a firebaseUser but no profile, and we're not loading anymore, 
+  // it means the profile is missing or failed to load.
+  if (!user) {
+    // Optionally redirect to a profile completion page or just allow through if appropriate
+    // For now, let's redirect to login to be safe, or show an error
+    return <Navigate to="/login" state={{ error: "PROFILE_MISSING" }} replace />;
   }
 
   if (roles && user && !roles.includes(user.role)) {

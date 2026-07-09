@@ -5,12 +5,12 @@ import { useAuth } from "../contexts/AuthContext";
 
 export function useCompanies() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, isGlobal } = useAuth();
 
   const companiesQuery = useQuery({
     queryKey: ["companies"],
     queryFn: () => companyService.getAll(),
-    enabled: !!user && user.role === 'SUPER_ADMIN',
+    enabled: !!user && isGlobal,
   });
 
   const myCompanyQuery = useQuery({

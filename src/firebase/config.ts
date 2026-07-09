@@ -3,7 +3,7 @@ import { initializeAuth, browserLocalPersistence, browserSessionPersistence, ind
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyBGIheHVsYzrpQRh55F9dqIyKwf7W0dv6k",
   authDomain: "gen-lang-client-0778844675.firebaseapp.com",
   projectId: "gen-lang-client-0778844675",

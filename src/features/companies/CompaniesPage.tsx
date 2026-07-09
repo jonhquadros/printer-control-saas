@@ -60,11 +60,11 @@ export const CompaniesPage: React.FC = () => {
             <img src={row.original.logoUrl} alt="Logo" className="w-8 h-8 rounded object-cover border border-slate-200" />
           ) : (
             <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center text-slate-500 font-bold border border-slate-200">
-              {row.original.name.charAt(0).toUpperCase()}
+              {row.original.name?.charAt(0).toUpperCase() || "?"}
             </div>
           )}
           <div>
-            <p className="font-bold text-slate-900 text-sm">{row.original.name}</p>
+            <p className="font-bold text-slate-900 text-sm">{row.original.name || "Sem Nome"}</p>
             <p className="text-[10px] text-slate-500">{row.original.cnpj}</p>
           </div>
         </div>

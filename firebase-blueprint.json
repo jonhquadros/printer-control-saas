@@ -1,130 +1,96 @@
 {
-  "collections": [
-    {
-      "name": "companies",
+  "entities": {
+    "Company": {
+      "title": "Company",
       "description": "Store tenant companies",
-      "fields": [
-        { "name": "name", "type": "string" },
-        { "name": "cnpj", "type": "string" },
-        { "name": "status", "type": "string" },
-        { "name": "plan", "type": "string" }
-      ]
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "cnpj": { "type": "string" },
+        "status": { "type": "string", "enum": ["ACTIVE", "INACTIVE"] },
+        "plan": { "type": "string" }
+      },
+      "required": ["name", "cnpj", "status"]
     },
-    {
-      "name": "users",
+    "User": {
+      "title": "User",
       "description": "Store users belonging to companies",
-      "fields": [
-        { "name": "name", "type": "string" },
-        { "name": "email", "type": "string" },
-        { "name": "role", "type": "string" },
-        { "name": "companyId", "type": "string" },
-        { "name": "status", "type": "string" }
-      ]
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["SUPER_ADMIN", "ADMIN", "TECHNICIAN", "CLIENT"] },
+        "companyId": { "type": "string" },
+        "status": { "type": "string", "enum": ["ACTIVE", "INACTIVE"] },
+        "phone": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "role", "companyId", "status"]
     },
-    {
-      "name": "printers",
+    "Printer": {
+      "title": "Printer",
       "description": "Store printer equipment",
-      "fields": [
-        { "name": "name", "type": "string" },
-        { "name": "serialNumber", "type": "string" },
-        { "name": "companyId", "type": "string" },
-        { "name": "status", "type": "string" },
-        { "name": "currentCounter", "type": "number" }
-      ]
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "serialNumber": { "type": "string" },
+        "companyId": { "type": "string" },
+        "status": { "type": "string", "enum": ["ACTIVE", "INACTIVE", "MAINTENANCE"] },
+        "currentCounter": { "type": "number" }
+      },
+      "required": ["name", "serialNumber", "companyId", "status"]
     },
-    {
-      "name": "printerCounters",
-      "description": "Store reading history",
-      "fields": [
-        { "name": "printerId", "type": "string" },
-        { "name": "companyId", "type": "string" },
-        { "name": "counter", "type": "number" },
-        { "name": "date", "type": "timestamp" }
-      ]
-    },
-    {
-      "name": "serviceOrders",
+    "ServiceOrder": {
+      "title": "ServiceOrder",
       "description": "Store service orders",
-      "fields": [
-        { "name": "number", "type": "number" },
-        { "name": "companyId", "type": "string" },
-        { "name": "printerId", "type": "string" },
-        { "name": "status", "type": "string" }
-      ]
+      "type": "object",
+      "properties": {
+        "number": { "type": "number" },
+        "companyId": { "type": "string" },
+        "printerId": { "type": "string" },
+        "status": { "type": "string", "enum": ["OPEN", "PENDING", "COMPLETED", "CANCELLED"] },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["number", "companyId", "printerId", "status"]
     },
-    {
-      "name": "audit",
+    "AuditLog": {
+      "title": "AuditLog",
       "description": "Store system logs and audit trail",
-      "fields": [
-        { "name": "companyId", "type": "string" },
-        { "name": "userId", "type": "string" },
-        { "name": "action", "type": "string" },
-        { "name": "timestamp", "type": "timestamp" }
-      ]
-    },
-    {
-      "name": "reports",
-      "description": "Store generated report metadata",
-      "fields": [
-        { "name": "companyId", "type": "string" },
-        { "name": "type", "type": "string" },
-        { "name": "name", "type": "string" },
-        { "name": "status", "type": "string" },
-        { "name": "filters", "type": "map" },
-        { "name": "fileUrl", "type": "string" },
-        { "name": "createdBy", "type": "string" },
-        { "name": "createdAt", "type": "timestamp" }
-      ]
-    },
-    {
-      "name": "whatsappConfigs",
-      "description": "Store WhatsApp provider configuration per company",
-      "fields": [
-        { "name": "companyId", "type": "string" },
-        { "name": "provider", "type": "string" },
-        { "name": "apiUrl", "type": "string" },
-        { "name": "apiKey", "type": "string" },
-        { "name": "phoneNumber", "type": "string" },
-        { "name": "instanceName", "type": "string" },
-        { "name": "isActive", "type": "boolean" },
-        { "name": "templates", "type": "map" },
-        { "name": "updatedAt", "type": "timestamp" }
-      ]
-    },
-    {
-      "name": "notifications",
-      "description": "Log of sent notifications",
-      "fields": [
-        { "name": "companyId", "type": "string" },
-        { "name": "orderId", "type": "string" },
-        { "name": "printerId", "type": "string" },
-        { "name": "event", "type": "string" },
-        { "name": "recipient", "type": "string" },
-        { "name": "message", "type": "string" },
-        { "name": "status", "type": "string" },
-        { "name": "error", "type": "string" },
-        { "name": "createdAt", "type": "timestamp" }
-      ]
-    },
-    {
-      "name": "files",
-      "description": "Store metadata for uploaded files",
-      "fields": [
-        { "name": "companyId", "type": "string" },
-        { "name": "moduleId", "type": "string" },
-        { "name": "entityId", "type": "string" },
-        { "name": "category", "type": "string" },
-        { "name": "name", "type": "string" },
-        { "name": "originalName", "type": "string" },
-        { "name": "url", "type": "string" },
-        { "name": "size", "type": "number" },
-        { "name": "type", "type": "string" },
-        { "name": "path", "type": "string" },
-        { "name": "status", "type": "string" },
-        { "name": "createdBy", "type": "string" },
-        { "name": "createdAt", "type": "timestamp" },
-        { "name": "deletedAt", "type": "timestamp" }
-      ]
+      "type": "object",
+      "properties": {
+        "module": { "type": "string" },
+        "action": { "type": "string" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "companyId": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["module", "action", "timestamp"]
     }
-  ]
+  },
+  "firestore": {
+    "/companies/{companyId}": {
+      "schema": "Company",
+      "description": "Company documents"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User documents"
+    },
+    "/printers/{printerId}": {
+      "schema": "Printer",
+      "description": "Printer documents"
+    },
+    "/serviceOrders/{orderId}": {
+      "schema": "ServiceOrder",
+      "description": "Service Order documents"
+    },
+    "/auditLogs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Audit log documents"
+    }
+  }
 }

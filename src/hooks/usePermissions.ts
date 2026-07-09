@@ -1,7 +1,7 @@
 import { useRole } from "./useRole";
 
-export type Action = 'CREATE' | 'READ' | 'UPDATE' | 'DELETE';
-export type Resource = 'PRINTERS' | 'SERVICE_ORDERS' | 'COMPANIES' | 'USERS' | 'REPORTS';
+export type Action = 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'MANAGE';
+export type Resource = 'PRINTERS' | 'SERVICE_ORDERS' | 'COMPANIES' | 'USERS' | 'REPORTS' | 'AUDIT_LOGS' | 'SETTINGS';
 
 export function usePermissions() {
   const { role, isSuperAdmin } = useRole();
@@ -12,11 +12,19 @@ export function usePermissions() {
     switch (role) {
       case 'ADMIN':
         if (resource === 'COMPANIES') return action === 'READ' || action === 'UPDATE';
-        return true; // Admin can do almost everything else within their company
+        if (resource === 'AUDIT_LOGS') return action === 'READ';
+        return true; 
       
+      case 'MANAGER':
+        if (resource === 'USERS') return action === 'READ';
+        if (resource === 'SETTINGS') return false;
+        if (resource === 'AUDIT_LOGS') return false;
+        return true; // Manager can manage Printers, OS, Reports in their scope (global scope via rules)
+
       case 'TECHNICIAN':
-        if (resource === 'SERVICE_ORDERS') return action === 'READ' || action === 'UPDATE';
+        if (resource === 'SERVICE_ORDERS') return action === 'READ' || action === 'UPDATE' || action === 'CREATE';
         if (resource === 'PRINTERS') return action === 'READ' || action === 'UPDATE';
+        if (resource === 'COMPANIES') return action === 'READ';
         return false;
       
       case 'CLIENT':

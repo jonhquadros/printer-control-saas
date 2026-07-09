@@ -12,7 +12,8 @@ import {
   ChevronRight,
   FileText,
   MessageSquare,
-  Sparkles
+  Sparkles,
+  DollarSign
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { useAuth } from "../../contexts/AuthContext";
@@ -29,7 +30,7 @@ const menuItems = [
 
 export const Sidebar: React.FC = () => {
   const [collapsed, setCollapsed] = React.useState(false);
-  const { user } = useAuth();
+  const { user, isSuperAdmin, isAdmin, isTechnician, isGlobal } = useAuth();
   const location = useLocation();
 
   const getMenuItems = () => {
@@ -39,13 +40,20 @@ export const Sidebar: React.FC = () => {
       { icon: ClipboardList, label: "Ordens de Serviço", href: "/service-orders" },
     ];
 
-    if (user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN') {
+    if (isGlobal || isAdmin) {
       items.splice(1, 0, { icon: Building2, label: "Empresas", href: "/companies" });
+    }
+
+    if (isSuperAdmin || isAdmin) {
       items.push({ icon: Users, label: "Usuários", href: "/users" });
       items.push({ icon: FileText, label: "Relatórios", href: "/reports" });
       items.push({ icon: MessageSquare, label: "WhatsApp", href: "/whatsapp" });
       items.push({ icon: Sparkles, label: "IA", href: "/ai" });
       items.push({ icon: Settings, label: "Configurações", href: "/settings" });
+    }
+
+    if (isSuperAdmin) {
+      items.push({ icon: DollarSign, label: "Financeiro", href: "/financial" });
     }
 
     return items;

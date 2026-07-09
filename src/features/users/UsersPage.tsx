@@ -16,7 +16,7 @@ export const UsersPage: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
-  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+  const canInvite = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || user?.role === 'CLIENT';
 
   const handleEdit = (u: User) => {
     setEditingUser(u);
@@ -41,10 +41,10 @@ export const UsersPage: React.FC = () => {
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold border border-slate-200 shrink-0">
-            {row.original.name.charAt(0).toUpperCase()}
+            {row.original.name?.charAt(0).toUpperCase() || "?"}
           </div>
           <div className="min-w-0">
-            <p className="font-bold text-slate-900 text-sm truncate">{row.original.name}</p>
+            <p className="font-bold text-slate-900 text-sm truncate">{row.original.name || "Sem Nome"}</p>
             <p className="text-[10px] text-slate-500 truncate">{row.original.email}</p>
           </div>
         </div>
@@ -108,7 +108,7 @@ export const UsersPage: React.FC = () => {
     {
       id: "actions",
       cell: ({ row }) => (
-        isAdmin && (
+        (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => handleEdit(row.original)} className="text-xs h-8">
               Editar
@@ -144,10 +144,13 @@ export const UsersPage: React.FC = () => {
           </p>
         </div>
 
-        {isAdmin && (
-          <Button onClick={() => setIsFormOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm">
-            <Plus className="w-4 h-4 mr-2" />
-            Convidar Usuário
+        {canInvite && (
+          <Button 
+            onClick={() => setIsFormOpen(true)} 
+            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-200/50 transition-all active:scale-95 flex items-center gap-2 h-10 px-4 rounded-xl"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="font-semibold text-sm">Criar Usuário</span>
           </Button>
         )}
       </div>

@@ -5,13 +5,12 @@ import { useAuth } from "../contexts/AuthContext";
 
 export function usePrinters() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, isGlobal } = useAuth();
   const companyId = user?.companyId;
-  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
   const printersQuery = useQuery({
-    queryKey: ["printers", companyId, isSuperAdmin],
-    queryFn: () => isSuperAdmin ? printerService.getAll() : (companyId ? printerService.getAll(companyId) : Promise.resolve([])),
+    queryKey: ["printers", companyId, isGlobal],
+    queryFn: () => isGlobal ? printerService.getAll() : (companyId ? printerService.getAll(companyId) : Promise.resolve([])),
     enabled: !!user,
   });
 

@@ -26,19 +26,22 @@ export const authService = {
       }
       
       await auditService.log({
+        module: 'AUTH',
         action: 'LOGIN',
         userId: result.user.uid,
         userEmail: email,
-        status: 'SUCCESS'
+        userName: profile.name,
+        companyId: profile.companyId,
+        details: `Usuário ${email} realizou login com sucesso.`
       });
       return result;
     } catch (error: any) {
       if (error.message !== "PROFILE_INCOMPLETE") {
         await auditService.log({
+          module: 'AUTH',
           action: 'LOGIN',
           userEmail: email,
-          status: 'FAILURE',
-          details: error.message
+          details: `Falha no login: ${error.message}`
         });
       }
       throw error;
@@ -77,7 +80,7 @@ export const authService = {
       const userProfile: Omit<User, 'id'> = {
         name,
         email,
-        role: email === 'wellingtonprox@gmail.com' ? 'SUPER_ADMIN' : 'ADMIN',
+        role: (email === 'wellingtonprox@gmail.com' || email === 'jonhquadros@gmail.com') ? 'SUPER_ADMIN' : 'ADMIN',
         companyId: companyRef.id,
         status: 'ACTIVE',
         createdAt: new Date(),
@@ -93,22 +96,29 @@ export const authService = {
       });
 
       await auditService.log({
-        action: 'REGISTER_ONBOARDING',
+        module: 'AUTH',
+        action: 'CREATE',
         userId: user.uid,
         userEmail: email,
+        userName: name,
         companyId: companyRef.id,
-        status: 'SUCCESS'
+        details: `Novo usuário ${email} registrado via formulário de cadastro.`
       });
 
       return userCredential;
     } catch (error: any) {
+       let errorMessage = error.message;
+       if (error.message?.includes("identitytoolkit.googleapis.com")) {
+         errorMessage = "O serviço de Autenticação não está totalmente configurado. Acesse o Console do Firebase, clique em 'Authentication' -> 'Get Started' e habilite o provedor 'E-mail/Senha'.";
+       }
+
        await auditService.log({
-        action: 'REGISTER_ONBOARDING',
+        module: 'AUTH',
+        action: 'CREATE',
         userEmail: email,
-        status: 'FAILURE',
-        details: error.message
+        details: `Falha no registro de usuário ${email}: ${errorMessage}`
       });
-      throw error;
+      throw new Error(errorMessage);
     }
   },
 
@@ -116,10 +126,11 @@ export const authService = {
     const user = auth.currentUser;
     if (user) {
       await auditService.log({
+        module: 'AUTH',
         action: 'LOGOUT',
         userId: user.uid,
         userEmail: user.email || '',
-        status: 'SUCCESS'
+        details: `Usuário encerrou a sessão.`
       });
     }
     return firebaseSignOut(auth);
@@ -129,16 +140,17 @@ export const authService = {
     try {
       await sendPasswordResetEmail(auth, email);
       await auditService.log({
-        action: 'PASSWORD_RESET_REQUEST',
+        module: 'AUTH',
+        action: 'UPDATE',
         userEmail: email,
-        status: 'SUCCESS'
+        details: `Solicitação de redefinição de senha para ${email}.`
       });
     } catch (error: any) {
        await auditService.log({
-        action: 'PASSWORD_RESET_REQUEST',
+        module: 'AUTH',
+        action: 'UPDATE',
         userEmail: email,
-        status: 'FAILURE',
-        details: error.message
+        details: `Falha ao solicitar redefinição de senha para ${email}: ${error.message}`
       });
       throw error;
     }

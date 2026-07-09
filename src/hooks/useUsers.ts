@@ -23,10 +23,11 @@ export function useUsers(companyId?: string) {
     enabled: !!user,
   });
 
-  const inviteUser = useMutation({
+  const createUser = useMutation({
     mutationFn: (data: UserFormValues) => {
-      if (!targetCompanyId) throw new Error("Company ID is required");
-      return userService.invite(targetCompanyId, data, user?.id, user?.email);
+      const finalCompanyId = data.companyId || targetCompanyId;
+      if (!finalCompanyId) throw new Error("Company ID is required");
+      return userService.create(finalCompanyId, data, user?.id, user?.email);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -51,7 +52,7 @@ export function useUsers(companyId?: string) {
   return {
     users: usersQuery.data || [],
     isLoading: usersQuery.isLoading,
-    inviteUser,
+    createUser,
     updateUser,
     deleteUser,
   };

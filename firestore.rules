@@ -2,80 +2,127 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Function to check if user is authenticated
+    // Basic Helpers
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Function to get the current user's profile
-    function getUserProfile() {
-      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data : null;
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    // Function to check if user belongs to the requested company
-    function belongsToCompany(companyId) {
-      let profile = getUserProfile();
-      return isAuthenticated() && profile != null && profile.companyId == companyId;
+    function hasRole(role) {
+      return isAuthenticated() && getUserData().role == role;
     }
 
-    // Function to check if user is admin
-    function isAdmin() {
-      let profile = getUserProfile();
-      return isAuthenticated() && profile != null && profile.role == 'ADMIN';
-    }
-    
-    // Function to check if user is super admin
     function isSuperAdmin() {
-      let profile = getUserProfile();
-      return isAuthenticated() && profile != null && profile.role == 'SUPER_ADMIN';
+      return hasRole('SUPER_ADMIN');
+    }
+
+    function isAdmin() {
+      return hasRole('ADMIN');
+    }
+
+    function isClient() {
+      return hasRole('CLIENT');
+    }
+
+    function isTechnician() {
+      return hasRole('TECHNICIAN');
+    }
+
+    function isManager() {
+      return hasRole('MANAGER');
+    }
+
+    function isGlobal() {
+      return isSuperAdmin() || isTechnician() || isManager();
+    }
+
+    function belongsToCompany(companyId) {
+      return isAuthenticated() && getUserData().companyId == companyId;
+    }
+
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
     }
 
     // Users Collection
     match /users/{userId} {
-      // Anyone can create a user profile during registration
-      allow create: if isAuthenticated() && request.auth.uid == userId;
-      // Users can read and update their own profile
+      // Allow self-read and self-update
       allow read, update: if isAuthenticated() && request.auth.uid == userId;
-      // Admins can read and update users in their company
-      allow read, update: if isAdmin() && belongsToCompany(resource.data.companyId);
-      // Super admins can do everything
+      
+      // Allow creation
+      allow create: if isAuthenticated() && (
+        // Self creation during register
+        (request.auth.uid == userId) ||
+        // Super admin can create any user
+        isSuperAdmin() ||
+        // Admin or Client or Manager can invite a CLIENT to their own company
+        ((isAdmin() || isClient() || isManager()) && 
+         request.resource.data.role == 'CLIENT' && 
+         request.resource.data.companyId == getUserData().companyId)
+      );
+
+      // Admin access to company users
+      allow read, update: if (isAdmin() || isManager()) && belongsToCompany(resource.data.companyId);
+      
+      // Super admin access
       allow read, write: if isSuperAdmin();
     }
 
     // Companies Collection
     match /companies/{companyId} {
-      // Allow creation during registration
       allow create: if isAuthenticated();
-      // Allow reading and updating if user belongs to this company and is admin
-      allow read: if belongsToCompany(companyId);
-      allow update: if isAdmin() && belongsToCompany(companyId);
-      // Super admins can do everything
-      allow read, write: if isSuperAdmin();
+      allow read: if belongsToCompany(companyId) || isGlobal();
+      allow update: if (isAdmin() && belongsToCompany(companyId)) || isSuperAdmin();
+      allow delete: if isSuperAdmin();
     }
 
-    // Generic rule for other company-isolated collections (e.g., printers, serviceOrders)
-    match /{collection}/{document=**} {
-      // Allow access if the document has a companyId field matching the user's company
-      // This is a simplified fallback for development.
-      // In production, each collection should have specific rules based on RBAC.
-      allow read, write: if (resource != null && 'companyId' in resource.data && belongsToCompany(resource.data.companyId)) || 
-                            (request.resource != null && 'companyId' in request.resource.data && belongsToCompany(request.resource.data.companyId)) ||
-                            isSuperAdmin();
-    }
-
-    // Reports Collection
-    match /reports/{reportId} {
-      allow read: if belongsToCompany(resource.data.companyId);
-      allow create: if belongsToCompany(request.resource.data.companyId) && (isAdmin() || getUserProfile().role == 'TECHNICIAN');
-      allow update, delete: if isAdmin() && belongsToCompany(resource.data.companyId);
-    }
-    
-    // Audit Logs Collection
+    // Audit Logs
     match /auditLogs/{logId} {
-      // Anyone can write an audit log
-      allow create: if true;
-      // Only super admin can read audit logs
-      allow read, update, delete: if isSuperAdmin();
+      // Allow any authenticated user to CREATE a log (as actions happen in UI)
+      allow create: if isAuthenticated();
+      
+      // Allow read only for Admin (same company) or Super Admin
+      allow read: if isSuperAdmin() || (isAdmin() && belongsToCompany(resource.data.companyId));
+      
+      // Block update and delete for EVERYONE - Logs are immutable
+      allow update, delete: if false;
+    }
+
+    // Company Settings
+    match /settings/{companyId} {
+      allow read: if belongsToCompany(companyId) || isGlobal();
+      allow write: if (isAdmin() && belongsToCompany(companyId)) || isSuperAdmin();
+    }
+
+    // In-App Notifications
+    match /notifications/{notificationId} {
+      allow read, update: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      allow create: if isAuthenticated(); 
+      allow delete: if isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+
+    // Special match for serviceOrders to allow Technician/Manager global access
+    match /serviceOrders/{osId} {
+       allow read, update: if isGlobal() || belongsToCompany(resource.data.companyId);
+       allow create: if isGlobal() || belongsToCompany(request.resource.data.companyId);
+    }
+
+    // Special match for printers to allow Technician/Manager global access
+    match /printers/{printerId} {
+       allow read: if isGlobal() || belongsToCompany(resource.data.companyId);
+       allow write: if isGlobal() || belongsToCompany(resource.data.companyId) || (request.resource != null && belongsToCompany(request.resource.data.companyId));
+    }
+
+    // Fallback for company-isolated collections (etc)
+    match /{collection}/{document=**} {
+      allow read, write: if isSuperAdmin();
+      
+      allow read, write: if (resource != null && belongsToCompany(resource.data.companyId)) || 
+                            (request.resource != null && belongsToCompany(request.resource.data.companyId));
     }
   }
 }

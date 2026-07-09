@@ -9,6 +9,12 @@ interface AuthContextType {
   firebaseUser: FirebaseUser | null;
   loading: boolean;
   reloadProfile: () => Promise<void>;
+  isSuperAdmin: boolean;
+  isAdmin: boolean;
+  isManager: boolean;
+  isTechnician: boolean;
+  isClient: boolean;
+  isGlobal: boolean; // SUPER_ADMIN, TECHNICIAN, or MANAGER
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -16,12 +22,25 @@ const AuthContext = createContext<AuthContextType>({
   firebaseUser: null,
   loading: true,
   reloadProfile: async () => {},
+  isSuperAdmin: false,
+  isAdmin: false,
+  isManager: false,
+  isTechnician: false,
+  isClient: false,
+  isGlobal: false,
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+  const isAdmin = user?.role === 'ADMIN';
+  const isManager = user?.role === 'MANAGER';
+  const isTechnician = user?.role === 'TECHNICIAN';
+  const isClient = user?.role === 'CLIENT';
+  const isGlobal = isSuperAdmin || isTechnician || isManager;
 
   const reloadProfile = async () => {
     if (auth.currentUser) {
@@ -60,7 +79,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, firebaseUser, loading, reloadProfile }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      firebaseUser, 
+      loading, 
+      reloadProfile,
+      isSuperAdmin,
+      isAdmin,
+      isManager,
+      isTechnician,
+      isClient,
+      isGlobal
+    }}>
       {children}
     </AuthContext.Provider>
   );

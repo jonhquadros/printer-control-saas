@@ -16,16 +16,22 @@ import { MainLayout } from "./components/layout/MainLayout";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { CompaniesPage } from "./features/companies/CompaniesPage";
 import { UsersPage } from "./features/users/UsersPage";
+import { AuditPage } from "./features/audit/AuditPage";
 import { PrintersPage } from "./features/printers/PrintersPage";
 import { PrinterDetailPage } from "./features/printers/PrinterDetailPage";
 import { ServiceOrdersPage } from "./features/service-orders/ServiceOrdersPage";
 import { ServiceOrderDetailPage } from "./features/service-orders/ServiceOrderDetailPage";
 import { SettingsPage } from "./features/settings/SettingsPage";
+import { SuperAdminSettingsPage } from "./features/settings/SuperAdminSettingsPage";
+import { OnboardingWizard } from "./features/onboarding/OnboardingWizard";
 import { AdminSetupPage } from "./features/auth/AdminSetupPage";
 import { ReportsPage } from "./features/reports/ReportsPage";
 import { NewReportPage } from "./features/reports/NewReportPage";
 import { WhatsAppPage } from "./features/whatsapp/WhatsAppPage";
 import { AIPage } from "./features/ai/AIPage";
+import { FinancialPage } from "./features/financial/FinancialPage";
+import { PartsPage } from "./features/financial/PartsPage";
+import { Toaster } from "react-hot-toast";
 
 const queryClient = new QueryClient();
 
@@ -34,11 +40,13 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
+          <Toaster position="top-right" />
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/admin-setup" element={<AdminSetupPage />} />
+            <Route path="/onboarding" element={<ProtectedRoute><OnboardingWizard /></ProtectedRoute>} />
             <Route 
               path="/" 
               element={
@@ -53,7 +61,7 @@ export default function App() {
               path="/companies" 
               element={
                 <ProtectedRoute>
-                  <RoleGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+                  <RoleGuard allowedRoles={['ADMIN', 'SUPER_ADMIN', 'TECHNICIAN', 'MANAGER']}>
                     <MainLayout>
                       <CompaniesPage />
                     </MainLayout>
@@ -65,7 +73,7 @@ export default function App() {
               path="/users" 
               element={
                 <ProtectedRoute>
-                  <RoleGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+                  <RoleGuard allowedRoles={['ADMIN', 'SUPER_ADMIN', 'MANAGER']}>
                     <MainLayout>
                       <UsersPage />
                     </MainLayout>
@@ -154,12 +162,60 @@ export default function App() {
               } 
             />
             <Route 
+              path="/financial" 
+              element={
+                <ProtectedRoute>
+                  <RoleGuard allowedRoles={['SUPER_ADMIN']}>
+                    <MainLayout>
+                      <FinancialPage />
+                    </MainLayout>
+                  </RoleGuard>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/financial/parts" 
+              element={
+                <ProtectedRoute>
+                  <RoleGuard allowedRoles={['SUPER_ADMIN']}>
+                    <MainLayout>
+                      <PartsPage />
+                    </MainLayout>
+                  </RoleGuard>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/audit" 
+              element={
+                <ProtectedRoute>
+                  <RoleGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+                    <MainLayout>
+                      <AuditPage />
+                    </MainLayout>
+                  </RoleGuard>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/settings" 
               element={
                 <ProtectedRoute>
                   <MainLayout>
                     <SettingsPage />
                   </MainLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/settings" 
+              element={
+                <ProtectedRoute>
+                  <RoleGuard allowedRoles={['SUPER_ADMIN']}>
+                    <MainLayout>
+                      <SuperAdminSettingsPage />
+                    </MainLayout>
+                  </RoleGuard>
                 </ProtectedRoute>
               } 
             />

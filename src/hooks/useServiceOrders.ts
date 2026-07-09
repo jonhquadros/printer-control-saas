@@ -6,17 +6,21 @@ import { ServiceOrderFormValues } from "../schemas/service-order.schema";
 
 export function useServiceOrders() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, isSuperAdmin, isTechnician, isGlobal } = useAuth();
   const companyId = user?.companyId;
-  const isTechnician = user?.role === 'TECHNICIAN';
 
   const query = useQuery({
-    queryKey: ["serviceOrders", companyId, user?.id],
+    queryKey: ["serviceOrders", companyId, user?.id, isGlobal],
     queryFn: () => {
-      if (!companyId) return Promise.resolve([]);
-      return serviceOrderService.getAll(companyId, isTechnician ? user.id : undefined);
+      if (!user) return Promise.resolve([]);
+      
+      return serviceOrderService.getAll(
+        isGlobal ? undefined : companyId, 
+        isGlobal ? undefined : (isTechnician ? user.id : undefined),
+        isGlobal
+      );
     },
-    enabled: !!companyId,
+    enabled: !!user,
   });
 
   const createOrder = useMutation({

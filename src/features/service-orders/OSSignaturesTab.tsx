@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { ServiceOrder } from "../../types";
 import { useServiceOrder } from "../../hooks/useServiceOrders";
 import { useAuth } from "../../contexts/AuthContext";
-import { serviceOrderService } from "../../services/service-order.service";
+import { uploadFile } from "../../services/storage.service";
 import SignatureCanvas from "react-signature-canvas";
 import { Button } from "../../components/ui/button";
 
@@ -12,7 +12,6 @@ export const OSSignaturesTab: React.FC<{ order: ServiceOrder }> = ({ order }) =>
   
   const techSigRef = useRef<SignatureCanvas>(null);
   const clientSigRef = useRef<SignatureCanvas>(null);
-
   const [savingTech, setSavingTech] = useState(false);
   const [savingClient, setSavingClient] = useState(false);
 
@@ -20,15 +19,21 @@ export const OSSignaturesTab: React.FC<{ order: ServiceOrder }> = ({ order }) =>
   const clearClient = () => clientSigRef.current?.clear();
 
   const handleSaveTech = async () => {
-    if (!techSigRef.current || techSigRef.current.isEmpty() || !user?.companyId) return;
+    if (!techSigRef.current || techSigRef.current.isEmpty() || !user?.companyId || !user?.id) return;
     setSavingTech(true);
     try {
       const dataUrl = techSigRef.current.toDataURL("image/png");
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], `tech_sig_${order.id}.png`, { type: "image/png" });
       
-      const url = await serviceOrderService.uploadPhoto(order.id, 'signatures', file, user.companyId);
-      await updateOrder.mutateAsync({ technicianSignatureUrl: url });
+      const result = await uploadFile(file, { maxSizeBytes: 5 * 1024 * 1024, acceptedFormats: ['image/png'], maxFiles: 1, compressionQuality: 1, compressionMaxWidth: 800 }, {
+        empresaId: user.companyId,
+        modulo: 'service-orders',
+        entidadeId: order.id,
+        categoria: 'documentos',
+        userId: user.id
+      });
+      await updateOrder.mutateAsync({ technicianSignatureUrl: result.url });
     } catch (err) {
       console.error(err);
       alert("Erro ao salvar assinatura do técnico.");
@@ -38,15 +43,21 @@ export const OSSignaturesTab: React.FC<{ order: ServiceOrder }> = ({ order }) =>
   };
 
   const handleSaveClient = async () => {
-    if (!clientSigRef.current || clientSigRef.current.isEmpty() || !user?.companyId) return;
+    if (!clientSigRef.current || clientSigRef.current.isEmpty() || !user?.companyId || !user?.id) return;
     setSavingClient(true);
     try {
       const dataUrl = clientSigRef.current.toDataURL("image/png");
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], `client_sig_${order.id}.png`, { type: "image/png" });
       
-      const url = await serviceOrderService.uploadPhoto(order.id, 'signatures', file, user.companyId);
-      await updateOrder.mutateAsync({ clientSignatureUrl: url });
+      const result = await uploadFile(file, { maxSizeBytes: 5 * 1024 * 1024, acceptedFormats: ['image/png'], maxFiles: 1, compressionQuality: 1, compressionMaxWidth: 800 }, {
+        empresaId: user.companyId,
+        modulo: 'service-orders',
+        entidadeId: order.id,
+        categoria: 'documentos',
+        userId: user.id
+      });
+      await updateOrder.mutateAsync({ clientSignatureUrl: result.url });
     } catch (err) {
       console.error(err);
       alert("Erro ao salvar assinatura do cliente.");

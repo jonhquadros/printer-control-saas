@@ -105,7 +105,7 @@ export const ServiceOrderDetailPage: React.FC = () => {
                 Gerando...
               </>
             ) : (
-              "Gerar PDF Profissional"
+              "Gerar PDF"
             )}
           </Button>
         </div>

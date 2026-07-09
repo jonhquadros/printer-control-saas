@@ -51,17 +51,25 @@ export const userService = {
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
   },
-
-  async invite(companyId: string, data: UserFormValues, adminId?: string, adminEmail?: string): Promise<void> {
-    await auditService.log({
-      action: 'INVITE_USER',
-      userId: adminId,
-      userEmail: adminEmail,
-      companyId: companyId,
-      status: 'SUCCESS',
-      details: `User ${data.email} invited to company ${companyId}.`
+  
+  async create(companyId: string, data: UserFormValues, adminId?: string, adminEmail?: string): Promise<void> {
+    const response = await fetch("/api/admin/create-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        companyId,
+        data,
+        adminId,
+        adminEmail,
+      }),
     });
-    console.warn("User invitation needs a backend function to securely create Firebase Auth users. Document not created in client to prevent permission denied.");
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Falha ao criar usuário no servidor.");
+    }
   },
 
   async update(id: string, data: Partial<UserFormValues>, adminId?: string, adminEmail?: string, companyId?: string): Promise<void> {
@@ -72,12 +80,12 @@ export const userService = {
     });
     
     await auditService.log({
-      action: 'UPDATE_USER',
+      module: 'USERS',
+      action: 'UPDATE',
       userId: adminId,
       userEmail: adminEmail,
       companyId: companyId,
-      status: 'SUCCESS',
-      details: `User ${id} updated.`
+      details: `Usuário ${id} atualizado pelo administrador.`
     });
   },
 

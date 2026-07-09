@@ -1,42 +1,50 @@
-# PrinterControl SaaS Control
+# PrinterControl SaaS v1.0
 
-Sistema completo para gestão de outsourcing de impressão e manutenção de equipamentos.
+Plataforma Multi-Tenant para gestão de outsourcing de impressão, controle de contadores, Ordens de Serviço e manutenção.
 
-## 🚀 Fase 01 - Setup e Design System (Concluída)
+## 🚀 Tecnologias
 
-- [x] Inicialização do projeto (Vite + React + TS)
-- [x] Arquitetura de pastas modular
-- [x] Design System com Tailwind CSS + Radix UI
-- [x] Dark / Light Mode
-- [x] Layout Principal Responsivo (Sidebar + Mobile Nav)
-- [x] Configuração Firebase Base
-- [x] Componentes Comuns (PageHeader, EmptyState, Loading)
-- [x] Placeholders de todos os módulos
+- **Frontend**: Next.js 15 (App Router), React 19, Tailwind CSS
+- **Backend**: Express (Vite Middleware), Firebase Admin SDK
+- **Database**: Firestore (NoSQL)
+- **Auth**: Firebase Authentication
+- **Storage**: Firebase Storage
+- **UI**: Shadcn/UI, Lucide Icons, Motion (Animations)
 
-## 🛠️ Tecnologias
+## 🛠️ Configuração Local
 
-- **Framework**: React 18+ (Vite)
-- **Styling**: Tailwind CSS
-- **Componentes**: Radix UI (via Shadcn/UI)
-- **Database/Auth**: Firebase (Firestore, Auth, Storage)
-- **Icons**: Lucide React
-- **Animações**: Framer Motion
+1.  **Instale as dependências**:
+    ```bash
+    npm install
+    ```
 
-## 📁 Estrutura do Projeto
+2.  **Variáveis de Ambiente**:
+    Crie um arquivo `.env` baseado no `.env.example` com suas credenciais do Firebase e Cloudinary.
 
-```
-src/
- ├── components/       # Componentes reutilizáveis
- ├── features/         # Módulos de negócio
- ├── services/         # Integração com APIs/Firebase
- ├── hooks/            # Hooks customizados
- ├── contexts/         # Contextos globais (Auth, etc)
- ├── lib/              # Configurações de bibliotecas
- ├── schemas/          # Validações Zod
- ├── types/            # Tipagens TypeScript
-```
+3.  **Desenvolvimento**:
+    ```bash
+    npm run dev
+    ```
 
-## 🔒 Segurança
+## 🔐 Segurança & Multi-Tenancy
 
-O sistema utiliza arquitetura **Multi-Tenant** isolada via `companyId` em todos os documentos do Firestore.
-As regras de segurança (Firestore Rules) garantem que usuários de uma empresa jamais acessem dados de outra.
+O sistema utiliza `companyId` como chave de isolamento em todos os documentos. As Firebase Security Rules garantem que usuários de uma empresa nunca acessem dados de outra.
+
+- **Admin**: Controle total da empresa.
+- **Técnico**: Gestão de OS e leituras.
+- **Cliente**: Acesso apenas leitura aos seus equipamentos.
+- **Super Admin**: Visão global de todos os tenants.
+
+## 📈 Funcionalidades Principais
+
+- Dashboard com KPIs em tempo real.
+- Gestão de Impressoras com QR Code.
+- Controle de Contadores e Manutenção Preventiva.
+- Ordens de Serviço com Assinatura Digital e Fotos.
+- Relatórios em PDF e Excel.
+- Notificações In-App e via WhatsApp.
+- Auditoria Completa de Ações.
+- Inteligência Artificial para Diagnósticos (Gemini).
+
+---
+Desenvolvido por Google AI Studio.

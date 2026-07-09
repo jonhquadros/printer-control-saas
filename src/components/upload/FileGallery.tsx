@@ -14,7 +14,7 @@ interface FileGalleryProps {
 
 export const FileGallery: React.FC<FileGalleryProps> = ({ modulo, entidadeId, categoria }) => {
   const { user } = useAuth();
-  const { files, isLoading } = useFileGallery(user?.empresaId || '', modulo, entidadeId);
+  const { files, isLoading } = useFileGallery(user?.companyId || '', modulo, entidadeId);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const filteredFiles = categoria ? files.filter(f => f.categoria === categoria) : files;

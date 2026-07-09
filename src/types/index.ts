@@ -1,4 +1,23 @@
-export type UserRole = 'ADMIN' | 'TECHNICIAN' | 'CLIENT' | 'SUPER_ADMIN';
+export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'TECHNICIAN' | 'CLIENT';
+
+export type Permission = 
+  | 'VIEW_ALL_COMPANIES'
+  | 'MANAGE_COMPANIES'
+  | 'VIEW_ALL_PRINTERS'
+  | 'MANAGE_PRINTERS'
+  | 'VIEW_ALL_OS'
+  | 'MANAGE_OS'
+  | 'VIEW_REPORTS'
+  | 'MANAGE_USERS'
+  | 'MANAGE_SETTINGS'
+  | 'VIEW_AUDIT_LOGS';
+
+export interface AuthState {
+  user: User | null;
+  loading: boolean;
+  error: string | null;
+  isAuthenticated: boolean;
+}
 
 export interface Company {
   id: string;
@@ -199,10 +218,66 @@ export interface UploadedFile extends BaseDocument {
   deletedAt?: any;
 }
 
-export interface UploadProgress {
-  fileName: string;
-  progress: number;
-  status: 'UPLOADING' | 'COMPLETED' | 'ERROR';
-  error?: string;
+export interface Part extends BaseDocument {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  unitCost: number;
+  stock: number;
+  minStock?: number;
+}
+
+export interface PartUsage extends BaseDocument {
+  id: string;
+  partId: string;
+  partName: string;
+  osId: string;
+  osNumber: number;
+  printerId: string;
+  technicianId: string;
+  quantity: number;
+  unitCost: number;
+  totalCost: number;
+  date: any;
+}
+
+export interface FinancialSummary extends BaseDocument {
+  id: string; // e.g., "YYYY-MM"
+  month: number;
+  year: number;
+  totalImpressions: number;
+  totalOsCost: number;
+  totalPartsCost: number;
+  totalLaborCost: number;
+  costPerImpression: number;
+  printerCount: number;
+  averageCostPerPrinter: number;
+}
+
+export interface TechnicianProductivity {
+  technicianId: string;
+  technicianName: string;
+  totalOs: number;
+  totalFinishedOs: number;
+  totalLaborCost: number;
+  totalPartsCost: number;
+  averageResponseTime?: number; // in hours
+  averageResolutionTime?: number; // in hours
+}
+
+export interface FinancialKPI {
+  totalCostPeriod: number;
+  totalPartsCost: number;
+  totalLaborCost: number;
+  costPerImpression: number;
+  averageOsCost: number;
+  totalImpressions: number;
+}
+
+export interface CostConfig extends BaseDocument {
+  id: string;
+  laborRatePerHour: number; // Valor da hora técnica
+  defaultPartMarkup?: number; // Markup padrão para peças se aplicável
 }
 

@@ -18,21 +18,24 @@ import { auditService } from "./audit.service";
 import { ServiceOrderFormValues } from "../schemas/service-order.schema";
 
 export const serviceOrderService = {
-  async getAll(companyId: string, technicianId?: string): Promise<ServiceOrder[]> {
-    let q = query(
-      collection(db, "serviceOrders"), 
-      where("companyId", "==", companyId),
-      orderBy("number", "desc")
-    );
+  async getAll(companyId?: string, technicianId?: string, isGlobal?: boolean): Promise<ServiceOrder[]> {
+    let q;
     
-    // If a technician ID is provided, filter to only show their assigned OS
-    // Actually, we need to filter client side or with a separate query, but let's do it here if possible.
-    // However, Firestore requires a composite index for where("technicianId") and orderBy("number").
-    // Let's just fetch all for the company and filter in memory if technicianId is present for simplicity,
-    // or assume we have the index. Let's do in-memory to avoid index issues.
+    if (isGlobal || !companyId) {
+      q = query(
+        collection(db, "serviceOrders"), 
+        orderBy("number", "desc")
+      );
+    } else {
+      q = query(
+        collection(db, "serviceOrders"), 
+        where("companyId", "==", companyId),
+        orderBy("number", "desc")
+      );
+    }
     
     const snapshot = await getDocs(q);
-    let orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ServiceOrder));
+    let orders = snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) } as ServiceOrder));
     
     if (technicianId) {
       orders = orders.filter(o => o.technicianId === technicianId);
@@ -82,11 +85,11 @@ export const serviceOrderService = {
     const docRef = await addDoc(collection(db, "serviceOrders"), osData);
     
     await auditService.log({
-      action: 'CREATE_OS',
+      module: 'SERVICE_ORDERS',
+      action: 'CREATE',
       userId,
       companyId,
-      status: 'SUCCESS',
-      details: `OS #${nextNumber} created.`
+      details: `OS #${nextNumber} criada para o equipamento ${data.printerId}.`
     });
 
     const newDoc = await getDoc(docRef);
@@ -102,11 +105,11 @@ export const serviceOrderService = {
     });
     
     await auditService.log({
-      action: 'UPDATE_OS_STATUS',
+      module: 'SERVICE_ORDERS',
+      action: 'STATUS_CHANGE',
       userId,
       companyId,
-      status: 'SUCCESS',
-      details: `OS ${id} status updated to ${status}.`
+      details: `Status da OS ${id} alterado para ${status}.`
     });
   },
 

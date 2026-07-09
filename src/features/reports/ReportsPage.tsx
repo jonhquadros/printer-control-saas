@@ -72,11 +72,17 @@ export const ReportsPage: React.FC = () => {
               <div className="flex items-center gap-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6">
                 <div className="flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
-                  {format(report.createdAt?.seconds ? report.createdAt.toDate() : new Date(report.createdAt), 'dd/MM/yyyy')}
+                  {(() => {
+                    const date = report.createdAt?.seconds ? report.createdAt.toDate() : new Date(report.createdAt);
+                    return isNaN(date.getTime()) ? '-' : format(date, 'dd/MM/yyyy');
+                  })()}
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
-                  {format(report.createdAt?.seconds ? report.createdAt.toDate() : new Date(report.createdAt), 'HH:mm')}
+                  {(() => {
+                    const date = report.createdAt?.seconds ? report.createdAt.toDate() : new Date(report.createdAt);
+                    return isNaN(date.getTime()) ? '-' : format(date, 'HH:mm');
+                  })()}
                 </div>
               </div>
 
@@ -86,23 +92,23 @@ export const ReportsPage: React.FC = () => {
                     variant="outline" 
                     size="sm" 
                     className="flex-1 rounded-xl h-9 border-slate-200 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-100"
-                    asChild
-                  >
-                    <a href={report.fileUrl} download={`${report.name}.${report.format.toLowerCase()}`}>
-                      <Download className="w-3.5 h-3.5 mr-2" />
-                      Baixar
-                    </a>
-                  </Button>
+                    render={
+                      <a href={report.fileUrl} download={`${report.name}.${report.format.toLowerCase()}`}>
+                        <Download className="w-3.5 h-3.5 mr-2" />
+                        Baixar
+                      </a>
+                    }
+                  />
                   <Button 
                     variant="ghost" 
                     size="icon" 
                     className="rounded-xl h-9 w-9 bg-slate-50 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
-                    asChild
-                  >
-                    <a href={report.fileUrl} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  </Button>
+                    render={
+                      <a href={report.fileUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    }
+                  />
                 </div>
               ) : report.status === 'FAILED' ? (
                 <div className="flex items-center gap-2 p-2 bg-red-50 rounded-xl text-red-600 text-[10px] font-bold uppercase">
